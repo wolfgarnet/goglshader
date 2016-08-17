@@ -19,6 +19,25 @@ func LoadGLProgram(vertexShaderFile, fragmentShaderFile string) (uint32, error) 
 		return 0, err
 	}
 
+	return CreateProgram(vertexShader, fragmentShader)
+}
+
+func InitializeProgram(vertexShaderString, fragmentShaderString string) (uint32, error) {
+	vertexShaderString += string('\x00')
+	vertexShader, err := CompileShader(vertexShaderString, gl.VERTEX_SHADER)
+	if err != nil {
+		return 0, err
+	}
+	fragmentShaderString += string('\x00')
+	fragmentShader, err2 := CompileShader(fragmentShaderString, gl.FRAGMENT_SHADER)
+	if err2 != nil {
+		return 0, err2
+	}
+
+	return CreateProgram(vertexShader, fragmentShader)
+}
+
+func CreateProgram(vertexShader, fragmentShader uint32) (uint32, error) {
 	program := gl.CreateProgram()
 
 	gl.AttachShader(program, vertexShader)
@@ -54,11 +73,11 @@ func LoadShader(shaderFile string, shaderType uint32) (uint32, error) {
 	}
 
 	content = append(content, '\x00')
-	return compileShader(string(content), shaderType)
+	return CompileShader(string(content), shaderType)
 }
 
 
-func compileShader(source string, shaderType uint32) (uint32, error) {
+func CompileShader(source string, shaderType uint32) (uint32, error) {
 	shader := gl.CreateShader(shaderType)
 
 	csources, free := gl.Strs(source)
